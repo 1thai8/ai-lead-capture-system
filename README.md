@@ -1,4 +1,4 @@
-🚀 AI Lead Capture & Intelligent Outreach
+# AI Lead Capture & Intelligent Outreach
 Automated pipeline designed to validate, store, and respond to leads using AI.
 
 🛠️ Tech Stack
