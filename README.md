@@ -1,7 +1,7 @@
 # AI Lead Capture & Intelligent Outreach
 Automated pipeline designed to validate, store, and respond to leads using AI.
 
-🛠️ Tech Stack
+Tech Stack
 Automation: n8n.
 
 AI Engine: Llama 3 via Groq.
@@ -10,7 +10,7 @@ Storage: Google Sheets.
 
 Communication: Gmail API.
 
-💡 Key Features
+Key Features
 Validation: Filters invalid data/empty leads before processing.
 
 Persistence: All leads are instantly logged to a spreadsheet.
