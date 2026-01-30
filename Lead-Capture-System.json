@@ -1,0 +1,438 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Lead Capture",
+        "formDescription": "The user will fill the fields",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Phone",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Messeger"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "9a1f5303-8b71-4c33-b151-aaa6debf8b97",
+      "name": "On form submission",
+      "webhookId": "a90edc57-b768-49a4-9a6a-742856aada16"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1icI_UqzbUA07M5YYU7VZF7iqTHG_J5y_tl90TnPFyPY",
+          "mode": "list",
+          "cachedResultName": "Capture Lead System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1icI_UqzbUA07M5YYU7VZF7iqTHG_J5y_tl90TnPFyPY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1icI_UqzbUA07M5YYU7VZF7iqTHG_J5y_tl90TnPFyPY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.Name }}",
+            "Email": "={{ $json.Email }}",
+            "Phone": "={{ $json.Phone }}",
+            "Messeger": "={{ $json.Messeger }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Messeger",
+              "displayName": "Messeger",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        48,
+        0
+      ],
+      "id": "1ec3f5b5-de7e-4e87-b700-26b50a4f8364",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7axfvU5ZceDfnaTu",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional business consultant. Analyze the lead's challenge:{{ $json.Messeger }} . Draft a personalized, helpful response in English to {{ $json.Name }}. Be concise and professional",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "9ca034d5-6827-407d-8b14-b673b6c62dfc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "0582e2b0-1750-434e-976a-04ef1075c4a5",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "KaKZbMdW6qlowpTX",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.Email }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        208
+      ],
+      "id": "4ecebab0-a697-4a21-b6e5-bbf288dd8786",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Append row in sheet').item.json.Email }}",
+        "subject": "=Quick solution for your query{{ $('Append row in sheet').item.json.Messeger }}",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "ae7ac61b-11f0-4e6b-9b2c-63d4981f3ed7",
+      "name": "Send a message",
+      "webhookId": "5e18b86f-5246-498a-8559-9c1d22c65a2c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PXe4pL1Q8GokNTXM",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Data Entry & Persistence\n(Form + Sheets)",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -112
+      ],
+      "id": "88dfae68-ef24-43ff-9e61-8aa6be53ad05",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "AI Brain & Context (Agent + Groq + Memory).",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -96
+      ],
+      "id": "ff2364ea-67b5-4690-a5bf-928fecdd4d2f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Automated Outreach\" (Gmail).",
+        "height": 80,
+        "width": 160
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        736,
+        -96
+      ],
+      "id": "e243e19e-e70c-413d-8617-22b91a0bc584",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "2972033d-cf54-4046-9012-3519c2acec88",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "luciddreamer5207418@gmail.com",
+        "subject": "Workflow Alert: Error in Lead System",
+        "message": "=The workflow failed. Execution ID: {{ $json.execution.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        16
+      ],
+      "id": "606f2770-d36e-487f-947d-ba9eb8b3e453",
+      "name": "Send a message1",
+      "webhookId": "7c711600-5dc7-476f-9682-a213e0333461",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PXe4pL1Q8GokNTXM",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "65802868-0e0e-4bae-a0bb-74111f79fd22",
+              "leftValue": "={{ $json.Email }} ",
+              "rightValue": "=@",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "5f307b51-785d-4351-83c1-d45716f2b31a",
+              "leftValue": "={{ $json.Messeger }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "6c269d92-d2d1-4922-8511-0a6a4a9ca711",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "content": "Data Validation & Quality Gate\n\nEmail Check: Ensures valid format with \"@\".\n\nContent Check: Filters out empty messages to save AI credits.\n\nLogic: Only qualified leads proceed to the AI Agent.\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -224
+      ],
+      "id": "2e58ef2d-5ad1-4776-9c4c-d1eacc9648ec",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Error Handling & Monitoring\n\nTrigger: Monitors failures across the entire workflow.\n\nAlert: Sends an automated notification with the Execution ID.\n\nPurpose: Ensures high availability and rapid troubleshooting.\n",
+        "height": 128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        -144
+      ],
+      "id": "82256fbe-6360-4041-8d32-e90930543cc9",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "cc98a928-155d-4894-be43-a5a596f96916",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6d56ff5b726775363f824f4eaa3f3a6b22317f56fdc466672a9e4ad627777b34"
+  },
+  "id": "LED7C8ULt5KD0DfbxxtkM",
+  "tags": []
+}
